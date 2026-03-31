@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Wellness Venture — Daily Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --surface3: #e8e4db;
+    --border: rgba(0,0,0,0.07);
+    --border2: rgba(0,0,0,0.13);
+    --text: #1a1916;
+    --muted: #8a8880;
+    --faint: #c8c5be;
+    --sage: #4a7c59;
+    --sage-light: #e8f0eb;
+    --sage-mid: #6fa882;
+    --sage-dark: #2d5c3d;
+    --sand: #c4a46b;
+    --sand-light: #f5ede0;
+    --sand-dark: #8a6d3e;
+    --terracotta: #c4614a;
+    --terra-light: #f5e8e5;
+    --slate: #4a6878;
+    --slate-light: #e5ecf0;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Instrument Serif', serif;
+    --body: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── LOADING ── */
+  #loading-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    gap: 16px;
+  }
+
+  .loading-title { font-family: var(--serif); font-size: 28px; font-style: italic; color: var(--sage); }
+  .loading-dots { display: flex; gap: 6px; }
+  .loading-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage-mid); animation: pulse 1.2s ease-in-out infinite; }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%,80%,100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  .page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 48px 20px 100px;
+  }
+
+  /* ── HEADER ── */
+  .page-header { margin-bottom: 36px; }
+
+  .page-eyebrow {
+    font-size: 10px; font-family: var(--mono); letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  }
+
+  .page-title { font-family: var(--serif); font-size: 48px; font-weight: 400; line-height: 1.05; color: var(--text); }
+  .page-title em { font-style: italic; color: var(--sage); }
+  .page-subtitle { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-top: 10px; line-height: 1.6; }
+
+  /* ── STATS ── */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 18px; position: relative; overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; border-radius: 3px 3px 0 0;
+  }
+
+  .stat-card:nth-child(1)::before { background: var(--sage); }
+  .stat-card:nth-child(2)::before { background: var(--sand); }
+  .stat-card:nth-child(3)::before { background: var(--slate); }
+  .stat-card:nth-child(4)::before { background: var(--terracotta); }
+
+  .stat-label { font-size: 9px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .stat-value { font-family: var(--serif); font-size: 34px; font-weight: 400; line-height: 1; color: var(--text); }
+  .stat-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 10px; font-family: var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── THIS WEEK ── */
+  .this-week {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 20px 18px; margin-bottom: 28px; overflow: hidden;
+  }
+
+  .this-week-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+
+  .week-nav { display: flex; align-items: center; gap: 6px; }
+
+  .week-nav-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--muted); font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; -webkit-appearance: none; user-select: none;
+  }
+
+  .week-nav-btn:active { background: var(--surface3); }
+  .week-nav-btn:disabled { opacity: 0.25; cursor: default; }
+
+  .week-viewport { overflow: hidden; position: relative; }
+
+  .week-slider { display: flex; transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); width: 200%; }
+
+  .week-panel { width: 50%; flex-shrink: 0; }
+
+  .week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+
+  .week-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+  .week-day-label { font-size: 9px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .week-day-num { font-size: 12px; font-weight: 500; color: var(--text); }
+
+  .week-day-bubble {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; border: 1.5px solid var(--border); background: var(--surface2);
+    cursor: pointer; transition: all 0.15s; user-select: none; position: relative;
+  }
+
+  .week-day-bubble:active { transform: scale(0.92); }
+  .week-day-bubble.worked { background: var(--sage-light); border-color: var(--sage-mid); }
+  .week-day-bubble.missed { background: var(--terra-light); border-color: #dca090; }
+  .week-day-bubble.rest   { background: var(--sand-light);  border-color: #e0c898; }
+  .week-day-bubble.today  { border-color: var(--sage); border-width: 2px; box-shadow: 0 0 0 3px rgba(74,124,89,0.1); }
+  .week-day-bubble.future { opacity: 0.28; cursor: default; pointer-events: none; }
+
+  .week-day-bubble.has-log::after {
+    content: ''; position: absolute; bottom: 1px; right: 1px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--sage); border: 1.5px solid white;
+  }
+  .week-day-bubble.missed.has-log::after { background: var(--terracotta); }
+  .week-day-bubble.rest.has-log::after   { background: var(--sand); }
+
+  .week-day-time { font-size: 9px; font-family: var(--mono); color: var(--muted); text-align: center; min-height: 12px; }
+  .prev-week-label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-align: center; margin-bottom: 10px; letter-spacing: 0.06em; }
+
+  /* ── HEATMAP ── */
+  .heatmap-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px 18px; margin-bottom: 28px; }
+
+  .heatmap-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+
+  .heatmap-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 10px; font-family: var(--mono); color: var(--muted); }
+
+  .legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+  .heatmap-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--surface2); flex-shrink: 0; }
+  .heatmap-cell.worked-short { background: #c8dfc8; }
+  .heatmap-cell.worked-mid   { background: var(--sage-mid); }
+  .heatmap-cell.worked-long  { background: var(--sage-dark); }
+  .heatmap-cell.missed       { background: #f0d5d0; }
+  .heatmap-cell.future       { background: var(--surface2); opacity: 0.3; }
+  .heatmap-cell.today        { outline: 2px solid var(--sage); outline-offset: 1px; }
+
+  /* ── LOG TABLE ── */
+  .log-outer { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; margin-bottom: 28px; }
+  .log-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .log-scroll::-webkit-scrollbar { display: none; }
+  .log-table { min-width: 580px; width: 100%; }
+
+  .log-header {
+    display: grid; grid-template-columns: 80px 65px 75px 1fr 150px 46px;
+    border-bottom: 1px solid var(--border); padding: 0 6px; background: var(--surface2);
+  }
+
+  .log-th { padding: 9px 10px; font-size: 9px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+
+  .log-row {
+    display: grid; grid-template-columns: 80px 65px 75px 1fr 150px 46px;
+    border-bottom: 1px solid var(--border); padding: 0 6px; align-items: center; transition: background 0.1s;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row:active { background: var(--surface2); }
+  .log-td { padding: 11px 10px; font-size: 12px; }
+  .log-td.muted { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 100px; font-size: 10px; margin: 1px 1px 1px 0; }
+  .chip-research { background: var(--slate-light); color: var(--slate); }
+  .chip-reading  { background: var(--sand-light);  color: var(--sand-dark); }
+  .chip-building { background: var(--sage-light);  color: var(--sage-dark); }
+  .chip-talking  { background: #f0eaf8; color: #6b4fa8; }
+  .chip-planning { background: #fdf0e0; color: #a07030; }
+  .chip-writing  { background: #e8f4f8; color: #2c6b7a; }
+  .chip-other    { background: var(--surface2); color: var(--muted); }
+
+  .time-badge {
+    display: inline-flex; align-items: center; padding: 2px 8px;
+    border-radius: 100px; font-size: 10px; font-family: var(--mono);
+    background: var(--surface2); color: var(--muted); border: 1px solid var(--border); white-space: nowrap;
+  }
+  .time-badge.t1 { background: #e8f0eb; color: var(--sage); border-color: #c0d8c4; }
+  .time-badge.t2 { background: #d0e8d4; color: var(--sage-dark); border-color: #a0c8a8; }
+  .time-badge.t3 { background: var(--sage-light); color: var(--sage-dark); border-color: var(--sage-mid); }
+  .time-badge.t4 { background: var(--sage-dark); color: #e8f4ec; border-color: var(--sage-dark); }
+
+  .done-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; flex-shrink: 0; }
+  .done-dot.yes  { background: var(--sage); }
+  .done-dot.no   { background: var(--terracotta); }
+  .done-dot.rest { background: var(--sand); }
+
+  /* ── BUTTONS ── */
+  .btn-log {
+    background: var(--sage); border: none; color: white; font-family: var(--body);
+    font-size: 13px; padding: 9px 18px; border-radius: 100px; cursor: pointer;
+    font-weight: 500; white-space: nowrap; -webkit-appearance: none;
+  }
+  .btn-log:active { background: var(--sage-dark); }
+
+  /* ── MODAL ── */
+  #modal-overlay {
+    position: fixed; inset: 0; background: rgba(26,25,22,0.6);
+    z-index: 100; align-items: flex-end; justify-content: center; display: none;
+  }
+  #modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface); border-radius: 24px 24px 0 0;
+    padding: 12px 22px 40px; width: 100%; max-width: 480px;
+    max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-handle { width: 36px; height: 4px; background: var(--faint); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-family: var(--serif); font-size: 26px; font-weight: 400; margin-bottom: 3px; }
+  .modal-date { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 22px; }
+
+  .field-group { margin-bottom: 20px; }
+
+  .field-label { display: block; font-size: 10px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+
+  .field-input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 12px 14px; color: var(--text);
+    font-family: var(--body); font-size: 15px; outline: none; -webkit-appearance: none;
+  }
+  .field-input:focus { border-color: var(--sage-mid); }
+
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg); border: 1px solid var(--border2); border-radius: 14px; padding: 14px 16px; gap: 12px;
+  }
+  .toggle-label { font-size: 15px; font-weight: 500; }
+  .toggle-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+
+  .big-toggle {
+    width: 50px; height: 28px; background: var(--faint); border-radius: 14px;
+    cursor: pointer; position: relative; transition: background 0.2s;
+    border: none; flex-shrink: 0; -webkit-appearance: none;
+  }
+  .big-toggle.on { background: var(--sage); }
+  .big-toggle::after {
+    content: ''; position: absolute; top: 4px; left: 4px;
+    width: 20px; height: 20px; border-radius: 50%; background: white;
+    transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  }
+  .big-toggle.on::after { transform: translateX(22px); }
+
+  /* ── SLIDER ── */
+  .slider-wrap { padding: 6px 0 10px; }
+  .slider-display { font-family: var(--serif); font-size: 32px; color: var(--sage-dark); margin-bottom: 12px; line-height: 1; }
+  .slider-display span { font-size: 16px; color: var(--muted); font-family: var(--mono); margin-left: 4px; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: var(--surface3); outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: var(--sage); cursor: pointer; box-shadow: 0 2px 6px rgba(74,124,89,0.3); border: 2px solid white; }
+  input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: var(--sage); cursor: pointer; box-shadow: 0 2px 6px rgba(74,124,89,0.3); border: 2px solid white; }
+
+  .slider-ticks { display: flex; justify-content: space-between; margin-top: 6px; font-size: 9px; font-family: var(--mono); color: var(--faint); }
+
+  /* ── ACTIVITY PILLS ── */
+  .activity-options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .activity-option {
+    padding: 8px 16px; border-radius: 100px; border: 1.5px solid var(--border2);
+    background: var(--bg); cursor: pointer; font-size: 13px; color: var(--muted);
+    transition: all 0.12s; user-select: none; -webkit-user-select: none;
+  }
+  .activity-option:active { transform: scale(0.96); }
+  .activity-option.selected { background: var(--sage-light); border-color: var(--sage); color: var(--sage-dark); }
+
+  /* ── MODAL ACTIONS ── */
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+  .btn-cancel { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-family: var(--body); font-size: 14px; padding: 14px; border-radius: 14px; cursor: pointer; -webkit-appearance: none; }
+  .btn-save   { flex: 2; background: var(--sage); border: 1px solid var(--sage-dark); color: white; font-family: var(--body); font-size: 14px; padding: 14px; border-radius: 14px; cursor: pointer; font-weight: 500; -webkit-appearance: none; }
+  .btn-save:disabled { opacity: 0.5; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(70px);
+    background: var(--sage-dark); color: white; padding: 11px 22px;
+    border-radius: 100px; font-size: 13px; font-family: var(--mono);
+    z-index: 300; transition: transform 0.3s ease; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .page > * { animation: fadeUp 0.45s ease both; }
+  .page > *:nth-child(1) { animation-delay: 0s; }
+  .page > *:nth-child(2) { animation-delay: 0.07s; }
+  .page > *:nth-child(3) { animation-delay: 0.14s; }
+  .page > *:nth-child(4) { animation-delay: 0.21s; }
+  .page > *:nth-child(5) { animation-delay: 0.28s; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loading-title">Building something.</div>
+  <div class="loading-dots">
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+  </div>
+</div>
+
+<div class="page" id="main-content" style="opacity:0;transition:opacity 0.4s ease">
+
+  <div class="page-header">
+    <div class="page-eyebrow">Wellness venture · research phase</div>
+    <div class="page-title">Building<br><em>something.</em></div>
+    <div class="page-subtitle">5 days/week target · show up, stay curious, keep going</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Current streak</div>
+      <div class="stat-value" id="stat-streak">0</div>
+      <div class="stat-sub">days in a row</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">This week</div>
+      <div class="stat-value" id="stat-week">0<span style="font-size:18px;color:var(--muted)">/5</span></div>
+      <div class="stat-sub">days worked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total hours</div>
+      <div class="stat-value" id="stat-hours">0</div>
+      <div class="stat-sub">hours logged</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total days</div>
+      <div class="stat-value" id="stat-days">0</div>
+      <div class="stat-sub">days worked</div>
+    </div>
+  </div>
+
+  <div class="this-week">
+    <div class="this-week-header">
+      <div>
+        <div style="font-family:var(--serif);font-size:20px;font-weight:400" id="week-title-label">This week</div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:1px" id="week-range"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="week-nav">
+          <button class="week-nav-btn" id="btn-prev-week" onclick="goToPrevWeek()">‹</button>
+          <button class="week-nav-btn" id="btn-next-week" onclick="goToNextWeek()" disabled>›</button>
+        </div>
+        <button class="btn-log" onclick="openModal(null)">+ Log today</button>
+      </div>
+    </div>
+    <div class="week-viewport" id="week-viewport">
+      <div class="week-slider" id="week-slider">
+        <div class="week-panel" id="panel-prev">
+          <div class="prev-week-label" id="prev-week-label"></div>
+          <div class="week-strip" id="week-strip-prev"></div>
+        </div>
+        <div class="week-panel" id="panel-curr">
+          <div class="week-strip" id="week-strip-curr"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">Activity — last 3 months</div>
+    <div class="heatmap-wrap">
+      <div class="heatmap-header">
+        <div style="font-family:var(--serif);font-size:17px">At a glance</div>
+        <div class="heatmap-legend">
+          <div class="legend-dot" style="background:var(--surface2);border:1px solid var(--border)"></div><span>none</span>
+          <div class="legend-dot" style="background:#c8dfc8;margin-left:6px"></div><span>&lt;30m</span>
+          <div class="legend-dot" style="background:var(--sage-mid);margin-left:6px"></div><span>30–60m</span>
+          <div class="legend-dot" style="background:var(--sage-dark);margin-left:6px"></div><span>60m+</span>
+          <div class="legend-dot" style="background:#f0d5d0;margin-left:6px"></div><span>missed</span>
+        </div>
+      </div>
+      <div id="heatmap-container"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">Session log</div>
+    <div class="log-outer">
+      <div class="log-scroll">
+        <div class="log-table">
+          <div class="log-header">
+            <div class="log-th">Date</div>
+            <div class="log-th">Done</div>
+            <div class="log-th">Time</div>
+            <div class="log-th">Activities</div>
+            <div class="log-th">Notes</div>
+            <div class="log-th">Wk</div>
+          </div>
+          <div id="log-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Log a session</div>
+    <div class="modal-date" id="modal-date-label"></div>
+
+    <div class="field-group">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Worked on it?</div>
+          <div class="toggle-sub" id="worked-sub">tap to mark as worked</div>
+        </div>
+        <button class="big-toggle" id="worked-toggle" onclick="toggleWorked()"></button>
+      </div>
+    </div>
+
+    <div id="worked-fields" style="display:none">
+      <div class="field-group">
+        <label class="field-label">Time spent</label>
+        <div class="slider-wrap">
+          <div class="slider-display" id="slider-display">15<span>min</span></div>
+          <input type="range" id="time-slider" min="1" max="32" value="1" step="1" oninput="updateSlider(this.value)">
+          <div class="slider-ticks"><span>15m</span><span>1h</span><span>2h</span><span>4h</span><span>6h</span><span>8h</span></div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">What did you work on?</label>
+        <div class="activity-options">
+          <div class="activity-option" onclick="toggleActivity(this,'Research')">Research</div>
+          <div class="activity-option" onclick="toggleActivity(this,'Reading')">Reading</div>
+          <div class="activity-option" onclick="toggleActivity(this,'Building')">Building</div>
+          <div class="activity-option" onclick="toggleActivity(this,'Talking to people')">Talking to people</div>
+          <div class="activity-option" onclick="toggleActivity(this,'Planning')">Planning</div>
+          <div class="activity-option" onclick="toggleActivity(this,'Writing')">Writing</div>
+          <div class="activity-option" onclick="toggleActivity(this,'Other')">Other</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Notes (optional)</label>
+        <input id="f-notes" type="text" placeholder="What you explored, read, discovered..." class="field-input">
+      </div>
+    </div>
+
+    <div id="rest-field">
+      <div class="field-group">
+        <label class="field-label">Mark as</label>
+        <select id="f-rest" class="field-input">
+          <option value="rest">Rest day (intentional)</option>
+          <option value="missed">Missed day</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="save-btn" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Supabase JS client from CDN — no build step needed -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// PASTE YOUR SUPABASE CREDENTIALS HERE
+// ─────────────────────────────────────────────
+const SUPABASE_URL  = 'PASTE_YOUR_PROJECT_URL_HERE';
+const SUPABASE_KEY  = 'PASTE_YOUR_ANON_KEY_HERE';
+// ─────────────────────────────────────────────
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── STATE ──
+let entries = [];
+let workedState = false;
+let selectedActivities = [];
+let currentModalDate = null;
+let showingPrevWeek = false;
+
+// ── SUPABASE ──
+async function loadEntries() {
+  const { data, error } = await sb.from('entries').select('*').order('date', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data.map(r => ({
+    date:       r.date,
+    status:     r.status,
+    timeLabel:  r.time_label,
+    timeHours:  parseFloat(r.time_hours) || 0,
+    activities: r.activities || [],
+    notes:      r.notes,
+    weekNum:    r.week_num,
+  }));
+}
+
+async function upsertEntry(entry) {
+  const { error } = await sb.from('entries').upsert({
+    date:        entry.date,
+    status:      entry.status,
+    time_label:  entry.timeLabel,
+    time_hours:  entry.timeHours,
+    activities:  entry.activities,
+    notes:       entry.notes,
+    week_num:    entry.weekNum,
+  }, { onConflict: 'date' });
+  if (error) throw error;
+}
+
+// ── SLIDER ──
+function sliderToMins(v) { return v * 15; }
+
+function formatMins(mins) {
+  if (mins < 60) return { display: mins + '<span>min</span>', label: mins + 'm', hours: mins / 60 };
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return {
+    display: m ? `${h}<span>h</span> ${m}<span>m</span>` : `${h}<span>h</span>`,
+    label:   m ? `${h}h ${m}m` : `${h}h`,
+    hours:   mins / 60,
+  };
+}
+
+function updateSlider(val) {
+  document.getElementById('slider-display').innerHTML = formatMins(sliderToMins(parseInt(val))).display;
+  const pct = ((val - 1) / 31) * 100;
+  document.getElementById('time-slider').style.background =
+    `linear-gradient(to right, var(--sage) ${pct}%, var(--surface3) ${pct}%)`;
+}
+
+// ── HELPERS ──
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function formatDate(ds) { return new Date(ds + 'T12:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }); }
+function formatDateLong(ds) { return new Date(ds + 'T12:00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+function getWeekNum(date) {
+  const d = new Date(date), start = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil(((d - start) / 86400000 + start.getDay() + 1) / 7);
+}
+function getMondayOf(date) {
+  const d = new Date(date), day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── STATS ──
+function calcStats() {
+  const worked = entries.filter(e => e.status === 'worked');
+  const totalHours = worked.reduce((s, e) => s + (e.timeHours || 0), 0);
+  let streak = 0;
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i = 0; i < 180; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const entry = entries.find(e => e.date === ds);
+    if (entry && entry.status === 'worked') streak++;
+    else if (entry && entry.status === 'missed') break;
+    else if (!entry && i > 0 && ds !== todayStr()) break;
+  }
+  const thisMon = getMondayOf(today);
+  let weekCount = 0;
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(thisMon); d.setDate(thisMon.getDate() + i);
+    const e = entries.find(x => x.date === d.toISOString().split('T')[0]);
+    if (e && e.status === 'worked') weekCount++;
+  }
+  document.getElementById('stat-streak').textContent = streak;
+  document.getElementById('stat-week').innerHTML = `${weekCount}<span style="font-size:18px;color:var(--muted)">/5</span>`;
+  document.getElementById('stat-hours').textContent = Math.round(totalHours * 10) / 10;
+  document.getElementById('stat-days').textContent = worked.length;
+}
+
+// ── WEEK ──
+function goToPrevWeek() {
+  showingPrevWeek = true;
+  document.getElementById('week-slider').style.transform = 'translateX(0%)';
+  document.getElementById('week-title-label').textContent = 'Last week';
+  document.getElementById('btn-prev-week').disabled = true;
+  document.getElementById('btn-next-week').disabled = false;
+  updateWeekRange();
+}
+
+function goToNextWeek() {
+  showingPrevWeek = false;
+  document.getElementById('week-slider').style.transform = 'translateX(-50%)';
+  document.getElementById('week-title-label').textContent = 'This week';
+  document.getElementById('btn-prev-week').disabled = false;
+  document.getElementById('btn-next-week').disabled = true;
+  updateWeekRange();
+}
+
+function updateWeekRange() {
+  const today = new Date(), thisMon = getMondayOf(today);
+  const mon = new Date(thisMon);
+  if (showingPrevWeek) mon.setDate(mon.getDate() - 7);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  document.getElementById('week-range').textContent =
+    formatDate(mon.toISOString().split('T')[0]) + ' – ' + formatDate(sun.toISOString().split('T')[0]);
+}
+
+function renderWeekIntoEl(el, mondayDate) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  el.innerHTML = days.map((day, i) => {
+    const d = new Date(mondayDate); d.setDate(mondayDate.getDate() + i);
+    const ds = d.toISOString().split('T')[0];
+    const isToday = ds === todayStr();
+    const isFuture = d > today;
+    const entry = entries.find(e => e.date === ds);
+    const isWeekend = i >= 5;
+    const status = entry ? entry.status : (isFuture ? 'future' : isWeekend ? 'rest' : 'none');
+    const emoji = status === 'worked' ? '✓' : status === 'rest' ? '—' : status === 'missed' ? '✗' : '';
+    let cls = 'week-day-bubble';
+    if (status === 'worked') cls += ' worked';
+    else if (status === 'missed') cls += ' missed';
+    else if (status === 'rest') cls += ' rest';
+    if (isToday) cls += ' today';
+    if (isFuture) cls += ' future';
+    if (entry) cls += ' has-log';
+    return `
+      <div class="week-day">
+        <div class="week-day-label">${day}</div>
+        <div class="week-day-num">${d.getDate()}</div>
+        <div class="${cls}" ${!isFuture ? `onclick="openModal('${ds}')"` : ''}>${emoji}</div>
+        <div class="week-day-time">${entry && entry.timeLabel ? entry.timeLabel : ''}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderWeekStrip() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const thisMon = getMondayOf(today);
+  const prevMon = new Date(thisMon); prevMon.setDate(thisMon.getDate() - 7);
+  const sun = new Date(prevMon); sun.setDate(prevMon.getDate() + 6);
+  document.getElementById('prev-week-label').textContent =
+    formatDate(prevMon.toISOString().split('T')[0]) + ' – ' + formatDate(sun.toISOString().split('T')[0]);
+  renderWeekIntoEl(document.getElementById('week-strip-prev'), prevMon);
+  renderWeekIntoEl(document.getElementById('week-strip-curr'), thisMon);
+  document.getElementById('week-slider').style.transform = showingPrevWeek ? 'translateX(0%)' : 'translateX(-50%)';
+  updateWeekRange();
+}
+
+// Touch swipe
+let touchStartX = 0;
+document.getElementById('week-viewport').addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+document.getElementById('week-viewport').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) < 40) return;
+  if (dx < 0 && !showingPrevWeek) goToPrevWeek();
+  if (dx > 0 && showingPrevWeek) goToNextWeek();
+}, { passive: true });
+
+// ── HEATMAP ──
+function renderHeatmap() {
+  const container = document.getElementById('heatmap-container');
+  const today = new Date();
+  const threeMonthsAgo = new Date(today); threeMonthsAgo.setMonth(today.getMonth() - 3);
+  const start = new Date(threeMonthsAgo);
+  start.setDate(start.getDate() - (start.getDay() === 0 ? 6 : start.getDay() - 1));
+  const cols = [], monthLabels = [];
+  let current = new Date(start), lastMonth = -1, colIdx = 0;
+  while (current <= today) {
+    const col = [], colStart = new Date(current);
+    for (let d = 0; d < 7; d++) { col.push(new Date(current)); current.setDate(current.getDate() + 1); }
+    cols.push(col);
+    if (colStart.getMonth() !== lastMonth) {
+      monthLabels.push({ col: colIdx, label: colStart.toLocaleDateString('en-AU', { month: 'short' }) });
+      lastMonth = colStart.getMonth();
+    }
+    colIdx++;
+  }
+  let html = '<div style="display:flex;gap:3px;margin-bottom:5px;padding-left:28px">';
+  cols.forEach((col, ci) => {
+    const ml = monthLabels.find(m => m.col === ci);
+    html += `<div style="width:11px;flex-shrink:0;font-size:9px;font-family:var(--mono);color:var(--muted);white-space:nowrap;overflow:visible">${ml ? ml.label : ''}</div>`;
+  });
+  html += '</div><div style="display:flex;gap:3px">';
+  html += '<div style="display:flex;flex-direction:column;gap:3px;margin-right:3px">';
+  ['','M','','W','','F',''].forEach(l => {
+    html += `<div style="width:20px;height:11px;font-size:9px;font-family:var(--mono);color:var(--muted);display:flex;align-items:center">${l}</div>`;
+  });
+  html += '</div>';
+  cols.forEach(col => {
+    html += '<div style="display:flex;flex-direction:column;gap:3px">';
+    col.forEach(day => {
+      const ds = day.toISOString().split('T')[0];
+      const isFuture = day > today, isToday = ds === todayStr();
+      const entry = entries.find(e => e.date === ds);
+      let cls = 'heatmap-cell';
+      if (isFuture) cls += ' future';
+      else if (entry && entry.status === 'worked') {
+        const h = entry.timeHours || 0;
+        cls += h < 0.5 ? ' worked-short' : h <= 1.0 ? ' worked-mid' : ' worked-long';
+      } else if (entry && entry.status === 'missed') cls += ' missed';
+      if (isToday) cls += ' today';
+      html += `<div class="${cls}" title="${ds}${entry ? ': ' + (entry.status === 'worked' ? entry.timeLabel || '' : entry.status) : ''}"></div>`;
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── LOG ──
+function renderLog() {
+  const body = document.getElementById('log-body');
+  if (!entries.length) {
+    body.innerHTML = `<div style="padding:28px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:11px">No sessions yet. Hit "+ Log today" to start.</div>`;
+    return;
+  }
+  const chipMap = { Research:'chip-research', Reading:'chip-reading', Building:'chip-building', 'Talking to people':'chip-talking', Planning:'chip-planning', Writing:'chip-writing', Other:'chip-other' };
+  const tbClass = h => h < 0.5 ? 't1' : h <= 1.0 ? 't2' : h <= 2.0 ? 't3' : 't4';
+  body.innerHTML = [...entries].sort((a,b) => b.date.localeCompare(a.date)).map(e => `
+    <div class="log-row">
+      <div class="log-td" style="font-family:var(--mono);font-size:11px;white-space:nowrap">${formatDate(e.date)}</div>
+      <div class="log-td" style="display:flex;align-items:center;white-space:nowrap"><span class="done-dot ${e.status==='worked'?'yes':e.status==='rest'?'rest':'no'}"></span>${e.status==='worked'?'Yes':e.status==='rest'?'Rest':'Missed'}</div>
+      <div class="log-td">${e.status==='worked'&&e.timeLabel?`<span class="time-badge ${tbClass(e.timeHours||0)}">${e.timeLabel}</span>`:'<span style="color:var(--faint);font-family:var(--mono);font-size:11px">—</span>'}</div>
+      <div class="log-td">${(e.activities||[]).map(a=>`<span class="chip ${chipMap[a]||'chip-other'}">${a}</span>`).join('')||'<span style="color:var(--faint);font-size:11px">—</span>'}</div>
+      <div class="log-td muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">${e.notes||'—'}</div>
+      <div class="log-td muted">${e.weekNum||'—'}</div>
+    </div>`).join('');
+}
+
+// ── MODAL ──
+function openModal(dateStr) {
+  currentModalDate = dateStr || todayStr();
+  const existing = entries.find(e => e.date === currentModalDate);
+  workedState = false;
+  selectedActivities = [];
+  document.querySelectorAll('.activity-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('time-slider').value = 1;
+  updateSlider(1);
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-rest').value = 'rest';
+  document.getElementById('modal-title').textContent = existing ? 'Edit session' : 'Log a session';
+  document.getElementById('modal-date-label').textContent = formatDateLong(currentModalDate);
+  if (existing) {
+    if (existing.status === 'worked') {
+      workedState = true;
+      const steps = Math.max(1, Math.min(32, Math.round(((existing.timeHours || 0.25) * 60) / 15)));
+      document.getElementById('time-slider').value = steps;
+      updateSlider(steps);
+      selectedActivities = [...(existing.activities || [])];
+      document.querySelectorAll('.activity-option').forEach(el => {
+        if (selectedActivities.includes(el.textContent.trim())) el.classList.add('selected');
+      });
+      document.getElementById('f-notes').value = existing.notes || '';
+    } else {
+      document.getElementById('f-rest').value = existing.status;
+    }
+  }
+  document.getElementById('worked-toggle').className = 'big-toggle' + (workedState ? ' on' : '');
+  document.getElementById('worked-sub').textContent = workedState ? 'marked as worked ✓' : 'tap to mark as worked';
+  document.getElementById('worked-fields').style.display = workedState ? 'block' : 'none';
+  document.getElementById('rest-field').style.display = workedState ? 'none' : 'block';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  currentModalDate = null;
+}
+
+function toggleWorked() {
+  workedState = !workedState;
+  document.getElementById('worked-toggle').className = 'big-toggle' + (workedState ? ' on' : '');
+  document.getElementById('worked-sub').textContent = workedState ? 'marked as worked ✓' : 'tap to mark as worked';
+  document.getElementById('worked-fields').style.display = workedState ? 'block' : 'none';
+  document.getElementById('rest-field').style.display = workedState ? 'none' : 'block';
+}
+
+function toggleActivity(el, name) {
+  el.classList.toggle('selected');
+  selectedActivities = el.classList.contains('selected')
+    ? [...selectedActivities, name]
+    : selectedActivities.filter(a => a !== name);
+}
+
+async function saveEntry() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  const f = formatMins(sliderToMins(parseInt(document.getElementById('time-slider').value)));
+  const entry = {
+    date:       currentModalDate,
+    status:     workedState ? 'worked' : document.getElementById('f-rest').value,
+    timeLabel:  workedState ? f.label : null,
+    timeHours:  workedState ? f.hours : 0,
+    activities: workedState ? [...selectedActivities] : [],
+    notes:      document.getElementById('f-notes').value || null,
+    weekNum:    getWeekNum(new Date(currentModalDate + 'T12:00:00')),
+  };
+  try {
+    await upsertEntry(entry);
+    const idx = entries.findIndex(e => e.date === currentModalDate);
+    if (idx >= 0) entries[idx] = entry; else entries.unshift(entry);
+    closeModal();
+    renderAll();
+    showToast(entry.status === 'worked' ? 'Session saved ✓' : 'Day logged ✓');
+  } catch(err) {
+    showToast('Error saving — try again');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save';
+  }
+}
+
+function renderAll() {
+  calcStats();
+  renderWeekStrip();
+  renderHeatmap();
+  renderLog();
+}
+
+// ── INIT ──
+async function init() {
+  try {
+    entries = await loadEntries();
+  } catch(e) {
+    console.error('Could not load entries:', e);
+    entries = [];
+  }
+  renderAll();
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('main-content').style.opacity = '1';
+}
+
+init();
+</script>
+</body>
+</html>
